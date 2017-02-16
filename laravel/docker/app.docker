@@ -1,0 +1,22 @@
+FROM hhvm/hhvm-proxygen:latest
+
+# Update and install custom tools
+RUN apt-get update -y && apt-get install -y curl vim
+
+# Install composer
+RUN mkdir /opt/composer
+RUN curl -sS https://getcomposer.org/installer | hhvm --php -- --install-dir=/opt/composer
+
+# Reconfigure HHVM
+ADD docker/hhvm.server.ini /etc/hhvm/site.ini
+
+# Copy utility files
+ADD docker/.bash_aliases /root/.bash_aliases
+ADD docker/app-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Expose port
+EXPOSE 80
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["/usr/bin/hhvm", "-m", "server", "-c", "/etc/hhvm/server.ini", "-c", "/etc/hhvm/site.ini"]

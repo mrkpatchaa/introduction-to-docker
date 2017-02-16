@@ -1,0 +1,34 @@
+version: '3'
+services:
+    app:
+        build:
+            context: ./
+            dockerfile: docker/app.docker
+        volumes:
+            - ./:/var/www
+        ports:
+          - "8080:80"
+        links:
+            - database
+            - cache
+        environment:
+        # We specify the parameters inside the container environment variable
+        # This allows us to run application outside of container, as we expose ports for mysql and redis
+        # (Change .env to match exposed ports in database and cache)
+            - "DB_PORT=3306"
+            - "DB_HOST=database"
+            - "REDIS_PORT=6379"
+            - "REDIS_HOST=cache"
+    database:
+        image: mysql:5.7
+        volumes:
+            - ./docker/data/mysql:/var/lib/mysql
+        environment:
+            - "MYSQL_ROOT_PASSWORD=laravel"
+            - "MYSQL_DATABASE=laravel"
+        ports:
+            - "33061:3306"
+    cache:
+        image: redis:3.0
+        ports:
+            - "63791:6379"
